@@ -1,11 +1,8 @@
 "use strict";
 
-const uuid = require("uuid");
-const AWS = require("aws-sdk");
-
-AWS.config.setPromisesDependency(require("bluebird"));
-
+const dataStore = require('../shared/data-store');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+
 
 module.exports.submit = (event, context, callback) => {
   const requestBody = JSON.parse(event.body);
@@ -17,23 +14,16 @@ module.exports.submit = (event, context, callback) => {
     return;
   }
 
-  saveRow(makeRow(chlorine))
+  dataStore.saveRow(dataStrore.makeRow(chlorine))
     .then(res => {
       callback(null, {
         statusCode: 200,
-        body: JSON.stringify({
-          message: `Sucessfully submitted data with chlorine ${chlorine}`,
-          id: res.id
-        })
       });
     })
     .catch(err => {
       console.log(err);
       callback(null, {
         statusCode: 500,
-        body: JSON.stringify({
-          message: `Unable to submit data with chlorine ${chlorine}`
-        })
       });
     });
 };
@@ -66,21 +56,3 @@ module.exports.list = (event, context, callback) => {
   dynamoDb.scan(params, onScan);
 };
 
-const saveRow = data => {
-  console.log("Submitting data");
-  const tableInfo = {
-    TableName: process.env.WSP_DATA_TABLE,
-    Item: data
-  };
-  return dynamoDb.put(tableInfo).promise().then(res => data);
-};
-
-const makeRow = chlorine => {
-  const timestamp = new Date().getTime();
-  return {
-    id: uuid.v1(),
-    chlorine: chlorine,
-    submittedAt: timestamp,
-    updatedAt: timestamp
-  };
-};

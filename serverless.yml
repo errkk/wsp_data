@@ -5,10 +5,11 @@ provider:
   runtime: nodejs6.10
 
   stage: dev
-  region: eu-west-1
+  region: eu-west-2
 
   environment:
     WSP_DATA_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    WSP_DATA_TOPIC: ${self:service}-${opt:stage, self:provider.stage}
 
   iamRoleStatements:
     - Effect: Allow
@@ -21,7 +22,7 @@ provider:
 
 functions:
   chlorineDataReceived:
-    handler: api/handler.submit
+    handler: handlers/api.submit
     memorySize: 128
     description: 'Save logger data to DB'
     events:
@@ -29,13 +30,20 @@ functions:
           path: chlorine
           method: post
   listData:
-    handler: api/handler.list
+    handler: handlers/api.list
     memorySize: 128
     description: List all data
     events:
       - http:
           path: data
           method: get
+  myIoT:
+    handler: handlers/iot.submit
+    memorySize: 128
+    description: 'Save logger data to DB'
+    events:
+      - iot:
+          sql: "SELECT * FROM '${self:provider.environment.WSP_DATA_TABLE}'"
 
 resources:
   Resources:
