@@ -27,7 +27,7 @@ functions:
     description: 'Save logger data to DB'
     events:
       - http:
-          path: chlorine
+          path: sigfox
           method: post
   listData:
     handler: handlers/api.list
@@ -37,13 +37,6 @@ functions:
       - http:
           path: data
           method: get
-  myIoT:
-    handler: handlers/iot.submit
-    memorySize: 128
-    description: 'Save logger data to DB'
-    events:
-      - iot:
-          sql: "SELECT * FROM '${self:provider.environment.WSP_DATA_TABLE}'"
 
 resources:
   Resources:

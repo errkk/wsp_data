@@ -1,20 +1,26 @@
 "use strict";
 
+const uuid = require("uuid");
+const AWS = require("aws-sdk");
 const dataStore = require('../shared/data-store');
+
+AWS.config.setPromisesDependency(require("bluebird"));
+
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 
 module.exports.submit = (event, context, callback) => {
   const requestBody = JSON.parse(event.body);
-  const chlorine = requestBody.chlorine;
+  console.log(event.body);
+  const { data, temp, time } = requestBody;
 
-  if (typeof chlorine !== "number") {
+  if (typeof temp !== "number") {
     console.error("Validation Failed");
     callback(new Error("Couldn't submit data because of validation errors."));
     return;
   }
 
-  dataStore.saveRow(dataStrore.makeRow(chlorine))
+  saveRow(makeRow(data, temp, time))
     .then(res => {
       callback(null, {
         statusCode: 200,
@@ -31,7 +37,7 @@ module.exports.submit = (event, context, callback) => {
 module.exports.list = (event, context, callback) => {
   var params = {
     TableName: process.env.WSP_DATA_TABLE,
-    ProjectionExpression: "chlorine"
+    ProjectionExpression: "temp"
   };
 
   console.log("Scanning Data table.");
@@ -54,5 +60,27 @@ module.exports.list = (event, context, callback) => {
   };
 
   dynamoDb.scan(params, onScan);
+};
+
+
+
+const saveRow = data => {
+  console.log("Submitting data");
+  const tableInfo = {
+    TableName: process.env.WSP_DATA_TABLE,
+    Item: data
+  };
+  return dynamoDb.put(tableInfo).promise().then(res => data);
+};
+
+const makeRow = (data, temp, time) => {
+  const timestamp = new Date().getTime();
+  console.log(data, temp, time);
+  return {
+    id: uuid.v1(),
+    temp: temp,
+    submittedAt: timestamp,
+    updatedAt: timestamp
+  };
 };
 

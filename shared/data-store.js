@@ -16,11 +16,12 @@ const saveRow = data => {
   return dynamoDb.put(tableInfo).promise().then(res => data);
 };
 
-const makeRow = chlorine => {
+const makeRow = (data, temp, time) => {
   const timestamp = new Date().getTime();
+  console.log(data, temp, time);
   return {
     id: uuid.v1(),
-    chlorine: chlorine,
+    temp: temp,
     submittedAt: timestamp,
     updatedAt: timestamp
   };
