@@ -2,45 +2,20 @@
 
 const uuid = require("uuid");
 const AWS = require("aws-sdk");
-const dataStore = require('../shared/data-store');
 
 AWS.config.setPromisesDependency(require("bluebird"));
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-
-module.exports.submit = (event, context, callback) => {
-  const requestBody = JSON.parse(event.body);
-  console.log(event.body);
-  const { data, temp, time } = requestBody;
-
-  if (typeof temp !== "number") {
-    console.error("Validation Failed");
-    callback(new Error("Couldn't submit data because of validation errors."));
-    return;
-  }
-
-  saveRow(makeRow(data, temp, time))
-    .then(res => {
-      callback(null, {
-        statusCode: 200,
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      callback(null, {
-        statusCode: 500,
-      });
-    });
-};
+const convertTemp = (t) => parseInt(t, 10) / 100;
 
 module.exports.list = (event, context, callback) => {
   var params = {
     TableName: process.env.WSP_DATA_TABLE,
-    ProjectionExpression: "temp"
+    ProjectionExpression: 'payload, #timestamp',
+    ExpressionAttributeNames: {'#timestamp': 'timestamp'},
   };
 
-  console.log("Scanning Data table.");
   const onScan = (err, data) => {
     if (err) {
       console.log(
@@ -50,10 +25,19 @@ module.exports.list = (event, context, callback) => {
       callback(err);
     } else {
       console.log("Scan succeeded.");
+      console.log(data.Items);
+      const items = data.Items.map(i => {
+        return {
+          temp: convertTemp(i.payload.temp),
+          chlorine: i.payload.chlorine,
+          ph: i.payload.ph,
+          timestamp: new Date(i.timestamp * 1000)
+        };
+      });
       return callback(null, {
         statusCode: 200,
         body: JSON.stringify({
-          data: data.Items
+          data: items
         })
       });
     }
@@ -61,26 +45,3 @@ module.exports.list = (event, context, callback) => {
 
   dynamoDb.scan(params, onScan);
 };
-
-
-
-const saveRow = data => {
-  console.log("Submitting data");
-  const tableInfo = {
-    TableName: process.env.WSP_DATA_TABLE,
-    Item: data
-  };
-  return dynamoDb.put(tableInfo).promise().then(res => data);
-};
-
-const makeRow = (data, temp, time) => {
-  const timestamp = new Date().getTime();
-  console.log(data, temp, time);
-  return {
-    id: uuid.v1(),
-    temp: temp,
-    submittedAt: timestamp,
-    updatedAt: timestamp
-  };
-};
-

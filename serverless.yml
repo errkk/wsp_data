@@ -8,8 +8,9 @@ provider:
   region: eu-west-2
 
   environment:
-    WSP_DATA_TABLE: ${self:service}-${opt:stage, self:provider.stage}
-    WSP_DATA_TOPIC: ${self:service}-${opt:stage, self:provider.stage}
+    WSP_DATA_TABLE: sigfox
+    WSP_DATA_TOPIC: sigfox
+    DEVICE_ID: 18B0AB
 
   iamRoleStatements:
     - Effect: Allow
@@ -21,14 +22,6 @@ provider:
       Resource: "*"
 
 functions:
-  chlorineDataReceived:
-    handler: handlers/api.submit
-    memorySize: 128
-    description: 'Save logger data to DB'
-    events:
-      - http:
-          path: sigfox
-          method: post
   listData:
     handler: handlers/api.list
     memorySize: 128
@@ -37,24 +30,3 @@ functions:
       - http:
           path: data
           method: get
-
-resources:
-  Resources:
-    WspDataDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
-      Properties:
-        AttributeDefinitions:
-          -
-            AttributeName: "id"
-            AttributeType: "S"
-        KeySchema:
-          -
-            AttributeName: "id"
-            KeyType: "HASH"
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        StreamSpecification:
-          StreamViewType: "NEW_AND_OLD_IMAGES"
-        TableName: ${self:provider.environment.WSP_DATA_TABLE}
