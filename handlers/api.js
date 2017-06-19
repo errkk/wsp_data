@@ -7,7 +7,16 @@ AWS.config.setPromisesDependency(require("bluebird"));
 
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
+function conversion(inMin, inMax, outMin, outMax) {
+  return (value) => {
+    const x = parseInt(value, 10);
+    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+  }
+}
+
 const convertTemp = (t) => parseInt(t, 10) / 100;
+const convertChlorine = conversion(0, 1023, 0, 4.0);
+const convertPh = conversion(0, 1023, 0, 14.0);
 
 module.exports.list = (event, context, callback) => {
   var params = {
@@ -25,12 +34,11 @@ module.exports.list = (event, context, callback) => {
       callback(err);
     } else {
       console.log("Scan succeeded.");
-      console.log(data.Items);
       const items = data.Items.map(i => {
         return {
           temp: convertTemp(i.payload.temp),
-          chlorine: i.payload.chlorine,
-          ph: i.payload.ph,
+          chlorine: convertChlorine(i.payload.chlorine),
+          ph: convertPh(i.payload.ph),
           timestamp: new Date(i.timestamp * 1000)
         };
       });

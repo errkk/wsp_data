@@ -30,3 +30,4 @@ functions:
       - http:
           path: data
           method: get
+          cors: true
