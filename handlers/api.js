@@ -33,17 +33,22 @@ module.exports.list = (event, context, callback) => {
       );
       callback(err);
     } else {
-      console.log("Scan succeeded.");
+      console.log(`Scan succeeded. ${data.Items.length} items`);
       const items = data.Items.map(i => {
         return {
           temp: convertTemp(i.payload.temp),
           chlorine: convertChlorine(i.payload.chlorine),
           ph: convertPh(i.payload.ph),
-          timestamp: new Date(i.timestamp * 1000)
+          timestamp: new Date(i.timestamp * 1000),
         };
       });
+      const lastModified = items[items.length -1].timestamp;
       return callback(null, {
         statusCode: 200,
+        headers: {
+          "Last-Modified": lastModified.toUTCString(),
+          "Cache-Control": "public, max-age=600",
+        },
         body: JSON.stringify({
           data: items
         })
