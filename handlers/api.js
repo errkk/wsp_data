@@ -36,7 +36,8 @@ module.exports.list = (event, context, callback) => {
       console.log(`Scan succeeded. ${data.Items.length} items`);
       const items = data.Items.map(i => {
         return {
-          temp: convertTemp(i.payload.temp),
+          tempInternal: convertTemp(i.payload.tempInternal),
+          tempExternal: convertTemp(i.payload.tempExternal),
           chlorine: convertChlorine(i.payload.chlorine),
           ph: convertPh(i.payload.ph),
           timestamp: new Date(i.timestamp * 1000),
