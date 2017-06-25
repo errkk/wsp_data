@@ -15,8 +15,9 @@ function conversion(inMin, inMax, outMin, outMax) {
 }
 
 const convertTemp = (t) => parseInt(t, 10) / 100;
-const convertChlorine = conversion(0, 1023, 0, 4.0);
 const convertPh = conversion(0, 1023, 0, 14.0);
+const convertCurrent = conversion(0, 1023, 0, 20);
+const convertChlorine = (t) => conversion(4, 20, 0, 4.0)(convertCurrent(t));
 
 module.exports.list = (event, context, callback) => {
   var params = {
