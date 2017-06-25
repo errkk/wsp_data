@@ -49,7 +49,7 @@ module.exports.list = (event, context, callback) => {
         statusCode: 200,
         headers: {
           "Last-Modified": lastModified.toUTCString(),
-          "Cache-Control": "public, max-age=600",
+          "Cache-Control": "public, max-age=60",
         },
         body: JSON.stringify({
           data: items
