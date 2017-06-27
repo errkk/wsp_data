@@ -50,6 +50,7 @@ module.exports.list = (event, context, callback) => {
         headers: {
           "Last-Modified": lastModified.toUTCString(),
           "Cache-Control": "public, max-age=60",
+          "Access-Control-Allow-Origin" : "*",
         },
         body: JSON.stringify({
           data: items
