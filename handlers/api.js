@@ -24,6 +24,7 @@ module.exports.list = (event, context, callback) => {
     TableName: process.env.WSP_DATA_TABLE,
     ProjectionExpression: 'payload, #timestamp',
     ExpressionAttributeNames: {'#timestamp': 'timestamp'},
+    Limit: 100,
   };
 
   const onScan = (err, data) => {
