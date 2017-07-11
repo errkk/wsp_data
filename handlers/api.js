@@ -23,8 +23,7 @@ module.exports.list = (event, context, callback) => {
   var params = {
     TableName: process.env.WSP_DATA_TABLE,
     ProjectionExpression: 'payload, #timestamp',
-    ExpressionAttributeNames: {'#timestamp': 'timestamp'},
-    Limit: 100,
+    ExpressionAttributeNames: { '#timestamp': 'timestamp' },
   };
 
   const onScan = (err, data) => {
@@ -45,7 +44,8 @@ module.exports.list = (event, context, callback) => {
           timestamp: new Date(i.timestamp * 1000),
         };
       });
-      const lastModified = items[items.length -1].timestamp;
+      const last = items[items.length -1];
+      const lastModified = (last) ? last.timestamp : new Date();
       return callback(null, {
         statusCode: 200,
         headers: {
