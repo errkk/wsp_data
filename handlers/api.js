@@ -20,10 +20,15 @@ const convertCurrent = conversion(0, 1023, 0, 20);
 const convertChlorine = (t) => conversion(4, 20, 0, 4.0)(convertCurrent(t));
 
 module.exports.list = (event, context, callback) => {
+  const now = new Date();
+  const since = Math.round((now - (48 * 60 * 60 * 1000)) / 1000);
+
   var params = {
     TableName: process.env.WSP_DATA_TABLE,
     ProjectionExpression: 'payload, #timestamp',
-    ExpressionAttributeNames: { '#timestamp': 'timestamp' },
+    ExpressionAttributeNames: { '#timestamp': 'time' },
+    ExpressionAttributeValues: { ':since': since },
+    FilterExpression: ":since < #timestamp",
   };
 
   const onScan = (err, data) => {

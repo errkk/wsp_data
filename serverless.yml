@@ -8,8 +8,7 @@ provider:
   region: eu-west-2
 
   environment:
-    WSP_DATA_TABLE: sigfox
-    WSP_DATA_TOPIC: sigfox
+    WSP_DATA_TABLE: wsp_sigfox
     DEVICE_ID: 18B0AB
 
   iamRoleStatements:
