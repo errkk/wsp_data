@@ -46,7 +46,7 @@ module.exports.list = (event, context, callback) => {
           tempExternal: convertTemp(i.payload.tempExternal),
           chlorine: convertChlorine(i.payload.chlorine),
           ph: convertPh(i.payload.ph),
-          timestamp: new Date(i.timestamp * 1000),
+          timestamp: new Date(i.time * 1000),
         };
       });
       const last = items[items.length -1];
