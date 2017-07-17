@@ -9,7 +9,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 function conversion(inMin, inMax, outMin, outMax) {
   return (value) => {
-    const x = parseInt(value, 10);
+    const x = (typeof value === 'string') ? parseInt(value, 10) : value;
     return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
   }
 }
@@ -39,7 +39,6 @@ module.exports.list = (event, context, callback) => {
       );
       callback(err);
     } else {
-      console.log(`Scan succeeded. ${data.Items.length} items`);
       const items = data.Items.map(i => {
         return {
           tempInternal: convertTemp(i.payload.tempInternal),
